@@ -10,8 +10,8 @@ app.get('/', function (req, res) {
   console.log("Página de inicio...")
 })
 
-app.get('/cursos', function (req, res) {
-  res.send('Estos son los cursos');
+app.get('/Test', function (req, res) {
+  res.send('Estos es el test');
   console.log("Página de cursos");
 })
 
