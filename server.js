@@ -29,8 +29,8 @@ app.get('/', function (req, res) {
   console.log("Página de inicio...")
 })
 
-app.get('/Test', function (req, res) {
-  res.send('Estos es el test');
+app.get('/cursos', function (req, res) {
+  res.send('Estos son los cursos');
   console.log("Página de cursos");
 })
 
@@ -41,6 +41,33 @@ app.get('/Test', function (req, res) {
       response.send(result);
   });
 });*/
+
+app.post('/createUser', (req, res) => {
+
+  /*if (!req.body.name || req.body.name.length < 3) {
+      // 400 Bad request
+      res.status(400).send('Name is required and should be minimum 3 characters!');
+      return;
+  }*/
+
+  var username = req.body.userId; //Aca se rompe. Hay que buscar la libreria de json para acceder a los datos.
+  console.log('user id: '+username).toString();
+
+  const user = {
+      userId: req.body.userId,
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      password: req.body.password,
+      apartment: req.body.apartment
+
+  };
+  conexion.query('INSERT INTO Usuario (userId, first_name, last_name, password, apartment) VALUES ('+user.userId+','+user.first_name+','+user.last_name+', '+user.password+','+user.apartment+')');
+  if(!err) {
+    res.json(rows);
+  } else {
+    console.log(err);
+  }
+});
 
 app.get('/getAllUsers', (req, res) => {
   conexion.query('SELECT * FROM Usuario', (err, rows, fields) => {
