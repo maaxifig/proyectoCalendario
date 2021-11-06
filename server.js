@@ -1,16 +1,18 @@
 // require: Trae la librería express del npm.
 var express = require('express');
-// Se invoca la función (de la variable express) y se almacena en la variable app.
-var app = express();
+const morgan = require('morgan')
 
+var app = express();
+app.use(morgan('dev'))
 var mysql = require('mysql');
+app.use(express.json());
 
 var conexion = mysql.createConnection({
 
   host: 'localhost',
   database: 'sistemaReservas',
   user: 'root',
-  password: 'Loreto18'
+  password: ''
 
 });
 
@@ -29,45 +31,28 @@ app.get('/', function (req, res) {
   console.log("Página de inicio...")
 })
 
-app.get('/cursos', function (req, res) {
-  res.send('Estos son los cursos');
-  console.log("Página de cursos");
-})
-
-/*app.get('/users', (request, response) => {
-  pool.query('SELECT * FROM Usuario', (error, result) => {
-      if (error) throw error;
-
-      response.send(result);
-  });
-});*/
-
 app.post('/createUser', (req, res) => {
+  
+  user = req.body
+  const query = 'INSERT INTO Usuario (userId, first_name, last_name, password, apartment) VALUES ("'+user.userId+'","'+user.first_name+'","'+user.last_name+'", "'+user.password+'","'+user.apartment+'")'
+  console.log(query)
+  
+  conexion.query(query);
 
-  /*if (!req.body.name || req.body.name.length < 3) {
-      // 400 Bad request
-      res.status(400).send('Name is required and should be minimum 3 characters!');
-      return;
-  }*/
-
-  var username = req.body.userId; //Aca se rompe. Hay que buscar la libreria de json para acceder a los datos.
-  console.log('user id: '+username).toString();
-
-  const user = {
-      userId: req.body.userId,
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      password: req.body.password,
-      apartment: req.body.apartment
-
-  };
-  conexion.query('INSERT INTO Usuario (userId, first_name, last_name, password, apartment) VALUES ('+user.userId+','+user.first_name+','+user.last_name+', '+user.password+','+user.apartment+')');
-  if(!err) {
-    res.json(rows);
-  } else {
-    console.log(err);
-  }
 });
+
+app.put('/updateUser/:userId', (req,res) => {
+
+  var { userId } = req.params
+  if (!userId) return res.status(404).send('The user with the given ID was not found!');
+
+  var user = req.body;
+
+  const query = 'UPDATE Usuario SET userID = "'+ user.userId +'", first_name = "'+ user.first_name +'", last_name = "'+ user.last_name +'",password = "'+ user.password +'",apartment = "'+user.apartment+'" WHERE userId = "'+ userId +'"'; 
+  console.log(query);
+  conexion.query(query);
+
+})
 
 app.get('/getAllUsers', (req, res) => {
   conexion.query('SELECT * FROM Usuario', (err, rows, fields) => {
@@ -90,5 +75,4 @@ app.get('/getUserById/:id', (req, res) => {
   });  
 });
 
-// Correr el servidor con el puerto 8989.
 app.listen(5000);
