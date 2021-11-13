@@ -15,7 +15,7 @@ var conexion = mysql.createConnection({
   host: 'localhost',
   database: 'sistemaReservas',
   user: 'root',
-  password: ''
+  password: 'Loreto18'
 
 });
 
@@ -37,6 +37,8 @@ app.get('/', function (req, res) {
 
 //MARK: - Create User:
 app.post('/createUser', (req, res) => {
+  console.log("Estoy dentro del endpoint");
+
   
   user = req.body
   const query = 'INSERT INTO Usuario (userId, first_name, last_name, password, apartment) VALUES ("'+user.userId+'","'+user.first_name+'","'+user.last_name+'", "'+user.password+'","'+user.apartment+'")'
@@ -105,7 +107,7 @@ const { id } = req.params
 app.post('/createReserva', (req, res) => {
 
   reserva = req.body
-  const query = 'INSERT INTO Reserva (idReserva, date, userId, turno, conLimpieza) VALUES ("'+reserva.idReserva+'","'+reserva.date+'","'+reserva.userId+'", "'+reserva.turno+'","'+reserva.conLimpieza+'")'
+  const query = 'INSERT INTO Reserva (userId, turno, conLimpieza, fecha) VALUES ("'+reserva.userId+'", "'+reserva.turno+'",'+reserva.conLimpieza+', "'+reserva.fecha+'")'
   console.log(query)
 
   conexion.query(query);
@@ -120,7 +122,7 @@ app.put('/updateReserva/:idReserva', (req,res) => {
 
   var reserva = req.body;
 
-  const query = 'UPDATE Reserva SET date = "'+ reserva.date +'", userId = "'+ reserva.userId +'",turno = "'+ reserva.turno +'",conLimpieza = "'+reserva.conLimpieza+'" WHERE idReserva = "'+ idReserva +'"';
+  const query = 'UPDATE Reserva SET fecha = "'+ reserva.fecha +'", userId = "'+ reserva.userId +'",turno = "'+ reserva.turno +'",conLimpieza = '+reserva.conLimpieza+' WHERE idReserva = "'+ idReserva +'"';
   console.log(query);
   conexion.query(query);
 
