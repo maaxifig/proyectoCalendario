@@ -82,6 +82,22 @@ app.get('/getUserById/:id', (req, res) => {
   });  
 });
 
-//MARK: - RESERVAS:
+//MARK: - RESERVES:
+
+
+//MARK: - Create Reserve
+
+
+//MARK: - Update Reserve
+
+
+//MARK: - Delete Reserve
+
+
+//MARK: - Get Specific Reserve
+
+
+//MARK: - Get All Reserves
+
 
 app.listen(5000);
