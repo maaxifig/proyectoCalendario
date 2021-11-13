@@ -1,4 +1,6 @@
 // require: Trae la librería express del npm.
+
+//MARK: - PREPARACION INICIAL:
 var express = require('express');
 const morgan = require('morgan')
 
@@ -7,6 +9,7 @@ app.use(morgan('dev'))
 var mysql = require('mysql');
 app.use(express.json());
 
+//MARK: - CONECCION:
 var conexion = mysql.createConnection({
 
   host: 'localhost',
@@ -24,6 +27,7 @@ conexion.connect(function(error){
   }
 })
 
+//MARK: - USUARIOS:
 // Define el home de la página y que función se va a ejecutar.
 // La función tiene como parámetro el request y el response.
 app.get('/', function (req, res) {
@@ -74,5 +78,7 @@ app.get('/getUserById/:id', (req, res) => {
     }
   });  
 });
+
+//MARK: - RESERVAS:
 
 app.listen(5000);
