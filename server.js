@@ -9,7 +9,7 @@ app.use(morgan('dev'))
 var mysql = require('mysql');
 app.use(express.json());
 
-//MARK: - CONECCION:
+//MARK: -------------------------------------------------------------------------------------- CONECCION:
 var conexion = mysql.createConnection({
 
   host: 'localhost',
@@ -27,7 +27,7 @@ conexion.connect(function(error){
   }
 })
 
-//MARK: - USUARIOS:
+//MARK: -------------------------------------------------------------------------------------- USUARIOS:
 // Define el home de la página y que función se va a ejecutar.
 // La función tiene como parámetro el request y el response.
 app.get('/', function (req, res) {
@@ -35,6 +35,7 @@ app.get('/', function (req, res) {
   console.log("Página de inicio...")
 })
 
+//MARK: - Create User:
 app.post('/createUser', (req, res) => {
   
   user = req.body
@@ -59,7 +60,7 @@ app.put('/updateUser/:userId', (req,res) => {
 
 })
 
-//MARK: - GetAllUsers
+//MARK: - GetAllUsers:
 app.get('/getAllUsers', (req, res) => {
   conexion.query('SELECT * FROM Usuario', (err, rows, fields) => {
     if(!err) {
@@ -70,7 +71,7 @@ app.get('/getAllUsers', (req, res) => {
   });  
 });
 
-//MARK: - Get Specific User
+//MARK: - Get Specific User:
 app.get('/getUserById/:id', (req, res) => {
   const { id } = req.params
   conexion.query('SELECT * FROM Usuario WHERE userId = ?', [id], (err, rows, fields) => {
@@ -82,22 +83,85 @@ app.get('/getUserById/:id', (req, res) => {
   });  
 });
 
-//MARK: - RESERVES:
+//MARK: - Delete Reserve:
+app.delete('/removeUserById/:id', (req, res) => {
+
+const { id } = req.params
+  conexion.query('DELETE  FROM Usuario WHERE userId = ?', [id], (err, rows, fields) => {
+    if(!err) {
+      res.json(rows);
+    } else {
+      console.log(err);
+    }
+  });
+
+});
 
 
-//MARK: - Create Reserve
+//MARK: -------------------------------------------------------------------------------------- RESERVES:
 
 
-//MARK: - Update Reserve
+//MARK: - Create Reserve:
+app.post('/createReserva', (req, res) => {
 
+  reserva = req.body
+  const query = 'INSERT INTO Reserva (idReserva, date, userId, turno, conLimpieza) VALUES ("'+reserva.idReserva+'","'+reserva.date+'","'+reserva.userId+'", "'+reserva.turno+'","'+reserva.conLimpieza+'")'
+  console.log(query)
 
-//MARK: - Delete Reserve
+  conexion.query(query);
 
+});
 
-//MARK: - Get Specific Reserve
+//MARK: - Update Reserve:
+app.put('/updateReserva/:idReserva', (req,res) => {
 
+  var { idReserva } = req.params
+  if (!idReserva) return res.status(404).send('The Reserve with the given ID was not found!');
 
-//MARK: - Get All Reserves
+  var reserva = req.body;
 
+  const query = 'UPDATE Reserva SET date = "'+ reserva.date +'", userId = "'+ reserva.userId +'",turno = "'+ reserva.turno +'",conLimpieza = "'+reserva.conLimpieza+'" WHERE idReserva = "'+ idReserva +'"';
+  console.log(query);
+  conexion.query(query);
 
+})
+
+//MARK: - Delete Reserve:
+app.delete('/removeReservaById/:id', (req, res) => {
+
+const { id } = req.params
+  conexion.query('DELETE  FROM Reserva WHERE idReserva = ?', [id], (err, rows, fields) => {
+    if(!err) {
+      res.json(rows);
+    } else {
+      console.log(err);
+    }
+  });
+
+});
+
+//MARK: - Get Specific Reserve:
+app.get('/getReservaById/:id', (req, res) => {
+  const { id } = req.params
+  conexion.query('SELECT * FROM Reserva WHERE idReserva = ?', [id], (err, rows, fields) => {
+    if(!err) {
+      res.json(rows);
+    } else {
+      console.log(err);
+    }
+  });
+});
+
+//MARK: - Get All Reserves:
+app.get('/getAllReservas', (req, res) => {
+  conexion.query('SELECT * FROM Reserva', (err, rows, fields) => {
+    if(!err) {
+      res.json(rows);
+    } else {
+      console.log(err);
+    }
+  });
+});
+
+//MARK: -------------------------------------------------------------------------------------- Final:
 app.listen(5000);
