@@ -45,6 +45,7 @@ app.post('/createUser', (req, res) => {
 
 });
 
+//MARK: - UpdateUser:
 app.put('/updateUser/:userId', (req,res) => {
 
   var { userId } = req.params
@@ -58,6 +59,7 @@ app.put('/updateUser/:userId', (req,res) => {
 
 })
 
+//MARK: - GetAllUsers
 app.get('/getAllUsers', (req, res) => {
   conexion.query('SELECT * FROM Usuario', (err, rows, fields) => {
     if(!err) {
@@ -68,6 +70,7 @@ app.get('/getAllUsers', (req, res) => {
   });  
 });
 
+//MARK: - Get Specific User
 app.get('/getUserById/:id', (req, res) => {
   const { id } = req.params
   conexion.query('SELECT * FROM Usuario WHERE userId = ?', [id], (err, rows, fields) => {
