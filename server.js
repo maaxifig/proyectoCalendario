@@ -3,7 +3,7 @@
 //MARK: - PREPARACION INICIAL:
 var express = require('express');
 const morgan = require('morgan')
-
+var router = express.Router();
 var app = express();
 app.use(morgan('dev'))
 var mysql = require('mysql');
@@ -15,7 +15,7 @@ var conexion = mysql.createConnection({
   host: 'localhost',
   database: 'sistemaReservas',
   user: 'root',
-  password: 'Loreto18'
+  password: ''
 
 });
 
@@ -38,37 +38,53 @@ app.get('/', function (req, res) {
 //MARK: - Create User:
 app.post('/createUser', (req, res) => {
   console.log("Estoy dentro del endpoint");
-
   
   user = req.body
   const query = 'INSERT INTO Usuario (userId, first_name, last_name, password, apartment) VALUES ("'+user.userId+'","'+user.first_name+'","'+user.last_name+'", "'+user.password+'","'+user.apartment+'")'
   console.log(query)
-  
-  conexion.query(query);
+  if (!user.userId)
+    res.status(404).send("El campo userId es obligatorio");
+  else
+    conexion.query(query);
 
 });
 
-//MARK: - UpdateUser:
+//MARK: - UpdateUser:                     REVISAR
 app.put('/updateUser/:userId', (req,res) => {
 
   var { userId } = req.params
-  if (!userId) return res.status(404).send('The user with the given ID was not found!');
-
   var user = req.body;
 
   const query = 'UPDATE Usuario SET userID = "'+ user.userId +'", first_name = "'+ user.first_name +'", last_name = "'+ user.last_name +'",password = "'+ user.password +'",apartment = "'+user.apartment+'" WHERE userId = "'+ userId +'"'; 
-  console.log(query);
-  conexion.query(query);
+  
+  conexion.query(query, (err, rows, fields) => {
+    console.log('Error:' +err);
+    console.log("rows:"+rows);
+    console.log("fields:"+fields);
+    if(!err && rows.body){
+      console.log("antes de enviar repsonse");
+      res.status(200).json({
+        Status: 'El usuario se modifico correctamente'
+      });
+    }
+    else {
+      res.status(409).json({
+        Status: 'No se puede modificar el usuario ya que esta ligado a una reserva o no existe'
+      });
+    }
+  });
 
-})
+});
 
 //MARK: - GetAllUsers:
 app.get('/getAllUsers', (req, res) => {
   conexion.query('SELECT * FROM Usuario', (err, rows, fields) => {
-    if(!err) {
-      res.json(rows);
+    if(!err && rows.length > 0) {
+      res.status(200).json(rows);
     } else {
-      console.log(err);
+      res.status(404).json({
+        Status: 'Not found'
+      });
     }
   });  
 });
@@ -77,27 +93,45 @@ app.get('/getAllUsers', (req, res) => {
 app.get('/getUserById/:id', (req, res) => {
   const { id } = req.params
   conexion.query('SELECT * FROM Usuario WHERE userId = ?', [id], (err, rows, fields) => {
-    if(!err) {
-      res.json(rows);
-    } else {
-      console.log(err);
+    if(!err && rows.length >0) {
+      res.status(200).json(rows);
+    } 
+    else{
+      res.status(404).json({
+        Status: 'El usuario no existe'
+      });
     }
   });  
 });
 
-//MARK: - Delete Reserve:
+//MARK: - Delete User:             FUNCIONANDO NO TOCAR
+
 app.delete('/removeUserById/:id', (req, res) => {
 
-const { id } = req.params
-  conexion.query('DELETE  FROM Usuario WHERE userId = ?', [id], (err, rows, fields) => {
-    if(!err) {
-      res.json(rows);
-    } else {
-      console.log(err);
+  const { id } = req.params
+     conexion.query('DELETE  FROM Usuario WHERE userId = ?', [id], (err, rows, fields) => {
+      if(rows){
+        if(rows.affectedRows > 0) {
+          res.status(200).json({
+            Status: 'El usuario se elimino correctamente'
+          });
+        } else {
+          if(!err){
+            res.status(404).json({
+            Status: 'El usuario no existe'
+          });
+        }
+      }
     }
+      else {
+          res.status(409).json({
+          Status: 'Conflict',
+          messege: 'El usuario tiene reservas vigentes',
+          code: '409'
+      });
+      }
+    });
   });
-
-});
 
 
 //MARK: -------------------------------------------------------------------------------------- RESERVES:
@@ -128,28 +162,37 @@ app.put('/updateReserva/:idReserva', (req,res) => {
 
 })
 
+
 //MARK: - Delete Reserve:
 app.delete('/removeReservaById/:id', (req, res) => {
 
 const { id } = req.params
   conexion.query('DELETE  FROM Reserva WHERE idReserva = ?', [id], (err, rows, fields) => {
-    if(!err) {
-      res.json(rows);
-    } else {
-      console.log(err);
-    }
+    console.log(rows);
+      if(rows.affectedRows > 0) {
+          res.status(200).json({
+          Status: 'La reserva se elimino correctamente'
+        });
+      } else {
+          if(!err){
+            res.status(404).json({
+            Status: 'La reserva no existe'
+          });
+        }
+      }
   });
-
 });
 
 //MARK: - Get Specific Reserve:
 app.get('/getReservaById/:id', (req, res) => {
   const { id } = req.params
   conexion.query('SELECT * FROM Reserva WHERE idReserva = ?', [id], (err, rows, fields) => {
-    if(!err) {
-      res.json(rows);
+    if(!err && rows.length >0) {
+      res.status(200).json(rows);
     } else {
-      console.log(err);
+        res.status(404).json({
+        Status: 'La reserva no existe'
+      });
     }
   });
 });
@@ -157,10 +200,12 @@ app.get('/getReservaById/:id', (req, res) => {
 //MARK: - Get All Reserves:
 app.get('/getAllReservas', (req, res) => {
   conexion.query('SELECT * FROM Reserva', (err, rows, fields) => {
-    if(!err) {
+    if(!err && rows.length > 0) {
       res.json(rows);
     } else {
-      console.log(err);
+      res.status(404).json({
+        Status: 'No hay reservas'
+      });
     }
   });
 });
