@@ -1,6 +1,7 @@
 // require: Trae la librería express del npm.
 
 //MARK: - PREPARACION INICIAL:
+const { json } = require('body-parser');
 var express = require('express');
 const morgan = require('morgan')
 var router = express.Router();
@@ -15,7 +16,7 @@ var conexion = mysql.createConnection({
   host: 'localhost',
   database: 'sistemaReservas',
   user: 'root',
-  password: ''
+  password: 'Loreto18'
 
 });
 
@@ -35,18 +36,23 @@ app.get('/', function (req, res) {
   console.log("Página de inicio...")
 })
 
+
+
 //MARK: - Create User:
 app.post('/createUser', (req, res) => {
-  console.log("Estoy dentro del endpoint");
-  
   user = req.body
   const query = 'INSERT INTO Usuario (userId, first_name, last_name, password, apartment) VALUES ("'+user.userId+'","'+user.first_name+'","'+user.last_name+'", "'+user.password+'","'+user.apartment+'")'
-  console.log(query)
-  if (!user.userId)
-    res.status(404).send("El campo userId es obligatorio");
-  else
-    conexion.query(query);
-
+  conexion.query(query, (err, rows, fields) => {
+      if(!err && rows.affectedRows > 0){
+        res.status(200).json({
+          status: "Se creo el usuario correctamente"
+        });
+      } else {
+        res.status(400).json({
+          status: "El userId ya esta utilizado, ingrese otro"
+        });
+      }
+  })
 });
 
 //MARK: - UpdateUser:                     REVISAR
@@ -58,11 +64,7 @@ app.put('/updateUser/:userId', (req,res) => {
   const query = 'UPDATE Usuario SET userID = "'+ user.userId +'", first_name = "'+ user.first_name +'", last_name = "'+ user.last_name +'",password = "'+ user.password +'",apartment = "'+user.apartment+'" WHERE userId = "'+ userId +'"'; 
   
   conexion.query(query, (err, rows, fields) => {
-    console.log('Error:' +err);
-    console.log("rows:"+rows);
-    console.log("fields:"+fields);
-    if(!err && rows.body){
-      console.log("antes de enviar repsonse");
+    if(!err){
       res.status(200).json({
         Status: 'El usuario se modifico correctamente'
       });
@@ -134,31 +136,51 @@ app.delete('/removeUserById/:id', (req, res) => {
   });
 
 
-//MARK: -------------------------------------------------------------------------------------- RESERVES:
+//MARK: -------------------------- RESERVES:----------------------------------------------------
 
 
-//MARK: - Create Reserve:
+//MARK: - Create Reserve: No se valida formato de fecha porque se supone q en calendar siempre sale bien
 app.post('/createReserva', (req, res) => {
 
   reserva = req.body
+
   const query = 'INSERT INTO Reserva (userId, turno, conLimpieza, fecha) VALUES ("'+reserva.userId+'", "'+reserva.turno+'",'+reserva.conLimpieza+', "'+reserva.fecha+'")'
-  console.log(query)
 
-  conexion.query(query);
-
+    conexion.query(query, (err, rows, fields) => {
+      console.log("Error: "+err);
+      if(!err && rows.affectedRows > 0){
+        res.status(200).json({
+          status: "Se creo el la reserva correctamente"
+        });
+      } else {
+        res.status(400).json({
+          status: "El usuario no existe"
+        });
+      }
+  })
 });
 
 //MARK: - Update Reserve:
 app.put('/updateReserva/:idReserva', (req,res) => {
 
   var { idReserva } = req.params
-  if (!idReserva) return res.status(404).send('The Reserve with the given ID was not found!');
+  if (!idReserva) return res.status(404).send('No se paso ningun id de reserva');
 
   var reserva = req.body;
 
   const query = 'UPDATE Reserva SET fecha = "'+ reserva.fecha +'", userId = "'+ reserva.userId +'",turno = "'+ reserva.turno +'",conLimpieza = '+reserva.conLimpieza+' WHERE idReserva = "'+ idReserva +'"';
   console.log(query);
-  conexion.query(query);
+  conexion.query(query, (err, rows, fields) => {
+    if(!err){
+      res.status(200).json({
+        status: "La reserva se modifico correctamente"
+      });
+    } else {
+      res.status(409).json({
+        status: "Hubo un error al modificar la reserva"
+      });
+    }
+  });
 
 })
 
@@ -200,6 +222,7 @@ app.get('/getReservaById/:id', (req, res) => {
 //MARK: - Get All Reserves:
 app.get('/getAllReservas', (req, res) => {
   conexion.query('SELECT * FROM Reserva', (err, rows, fields) => {
+    console.log("Cantidad de reservas:"+ rows.length);
     if(!err && rows.length > 0) {
       res.json(rows);
     } else {
@@ -210,5 +233,24 @@ app.get('/getAllReservas', (req, res) => {
   });
 });
 
+//Validar fecha
+/*
+function validarReserva (fecha, turno) {
+  const query = 'SELECT * FROM Reserva WHERE fecha = "'+fecha+'" AND turno = "'+turno+'"'
+  console.log("query: "+ query);
+  const resultado = conexion.query(query, (err, rows, fields) => {
+    
+    console.log("rows: "+rows);
+    console.log("fields: "+fields);
+      
+   
+  });
+  console.log("resultado:"+resultado);
+  console.log(Object.values(resultado));
+
+  return resultado;
+
+}
+*/
 //MARK: -------------------------------------------------------------------------------------- Final:
 app.listen(5000);
