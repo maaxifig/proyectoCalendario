@@ -16,7 +16,7 @@ var conexion = mysql.createConnection({
   host: 'localhost',
   database: 'sistemaReservas',
   user: 'root',
-  password: 'Loreto18'
+  password: ''
 
 });
 
@@ -233,8 +233,8 @@ app.get('/getAllReservas', (req, res) => {
   });
 });
 
-//Validar fecha
-/*
+//Validar fecha HAY QUE IMPLEMENTARLO CON CALLBACKS
+/* 
 function validarReserva (fecha, turno) {
   const query = 'SELECT * FROM Reserva WHERE fecha = "'+fecha+'" AND turno = "'+turno+'"'
   console.log("query: "+ query);
@@ -242,7 +242,10 @@ function validarReserva (fecha, turno) {
     
     console.log("rows: "+rows);
     console.log("fields: "+fields);
-      
+    
+    if(!err){
+      return rows.length
+    }
    
   });
   console.log("resultado:"+resultado);
@@ -252,5 +255,6 @@ function validarReserva (fecha, turno) {
 
 }
 */
+
 //MARK: -------------------------------------------------------------------------------------- Final:
 app.listen(5000);
